@@ -1,6 +1,8 @@
 package app.jobs;
 
 import app.jobs.db.ConnPool;
+import app.jobs.fw.Poller;
+import app.jobs.fw.ThreadPool;
 import app.jobs.queue.Queue;
 
 import java.sql.Connection;
@@ -9,10 +11,27 @@ import java.sql.ResultSet;
 
 public class Main {
     public static void main(String[] args) {
+        // Initialize thread pool for job executors
+        ThreadPool.initThreadPool();
+
+        ConnPool.initConnPool();
         Queue.initQueue();
-        Queue.sendMessage("Hello from main");
-        String message = Queue.receiveMessage();
-        System.out.println(message);
+
+        Poller jobPoller = new Poller();
+        jobPoller.pollForJobs();
+        if (System.getenv("IS_PICKER") == "true") {
+
+        }
+
+
+
+
+
+//        Queue.initQueue();
+//        Queue.sendMessage("Hello from main");
+//        String message = Queue.receiveMessage();
+//        System.out.println(message);
+
 //        ConnPool.initConnPool();
 
 //        try (Connection c = ConnPool.getConnection()) {
