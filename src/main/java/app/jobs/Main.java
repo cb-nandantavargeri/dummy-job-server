@@ -1,13 +1,14 @@
 package app.jobs;
 
 import app.jobs.db.ConnPool;
+import app.jobs.fw.Picker;
 import app.jobs.fw.Poller;
 import app.jobs.fw.ThreadPool;
 import app.jobs.queue.Queue;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static void main(String[] args) {
@@ -17,32 +18,26 @@ public class Main {
         ConnPool.initConnPool();
         Queue.initQueue();
 
-        Poller jobPoller = new Poller();
-        jobPoller.pollForJobs();
-        if (System.getenv("IS_PICKER") == "true") {
-
+        if ("true".equals(System.getenv("IS_PICKER"))) {
+            Picker picker = new Picker();
+            ScheduledExecutorService pickerThread = Executors.newSingleThreadScheduledExecutor();
+            pickerThread.scheduleWithFixedDelay(() -> {
+                try {
+                    picker.pickJobs();
+                } catch (Throwable t) {
+                    System.err.println("[MAIN] Unhandled picker throwable: " + t.getMessage());
+                }
+            }, 0, 2, java.util.concurrent.TimeUnit.MINUTES);
         }
 
-
-
-
-
-//        Queue.initQueue();
-//        Queue.sendMessage("Hello from main");
-//        String message = Queue.receiveMessage();
-//        System.out.println(message);
-
-//        ConnPool.initConnPool();
-
-//        try (Connection c = ConnPool.getConnection()) {
-//            PreparedStatement ps = c.prepareStatement("SELECT VERSION(), DATABASE()");
-//            ResultSet rs = ps.executeQuery();
-//            if (rs.next()) {
-//                System.out.println("MySQL: " + rs.getString(1) + " | DB: " + rs.getString(2));
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Failed to get connection");
-//        }
+        Poller poller = new Poller();
+        ScheduledExecutorService pollerThread = Executors.newSingleThreadScheduledExecutor();
+        pollerThread.scheduleWithFixedDelay(() -> {
+            try {
+                poller.pollForJobs();
+            } catch (Throwable t) {
+                System.err.println("[MAIN] Unhandled poller throwable: " + t.getMessage());
+            }
+        }, 0, 2, java.util.concurrent.TimeUnit.MINUTES);
     }
-
 }
