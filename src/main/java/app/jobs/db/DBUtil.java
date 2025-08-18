@@ -24,7 +24,7 @@ public class DBUtil {
         String selectQuery =
                 "SELECT * " +
                 "FROM sch_jobs " +
-                "WHERE status = 'SCHEDULED' AND scheduled_at <= ?" +
+                "WHERE status = 'SCHEDULED' AND scheduled_at <= ? " +
                 "ORDER BY scheduled_at ASC " +
                 "LIMIT ? " +
                 "FOR UPDATE SKIP LOCKED";
@@ -95,8 +95,8 @@ public class DBUtil {
         try (Connection conn = ConnPool.getConnection();
              PreparedStatement ps = conn.prepareStatement(updateQuery)) {
             ps.setString(1, status.name());
-            ps.setLong(1, Instant.now().getEpochSecond());
-            ps.setLong(2, id);
+            ps.setLong(2, Instant.now().getEpochSecond());
+            ps.setLong(3, id);
             ps.executeUpdate();
         }
     }

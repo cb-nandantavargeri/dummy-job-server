@@ -50,9 +50,10 @@ public class Executor {
     private void updateJobStatus(JobStatus jobStatus) {
         try {
             DBUtil.updateJobStatus(jobId, jobStatus);
-        } catch (SQLException ex) {
+        } catch (SQLException e) {
             System.err.println("[EXECUTOR] Exception while updating job status to " +
-                    jobStatus.name() + "for job " + jobId);
+                    jobStatus.name() + " for job " + jobId);
+            System.err.println(e.getMessage());
         }
     }
 }

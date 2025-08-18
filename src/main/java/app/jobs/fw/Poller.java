@@ -10,14 +10,18 @@ import java.util.concurrent.RejectedExecutionException;
  */
 public class Poller {
 
+    private static final int CONCURRENT_JOB_LIMIT = 5;
+
     public void pollForJobs() {
         System.out.println("[POLLER] Polling for jobs...");
-        String message = Queue.receiveMessage();
-        if (message != null) {
-            String[] parsedMessage = message.split("-");
-            Long jobId = Long.valueOf(parsedMessage[0]);
-            String jobType = parsedMessage[1];
-            runJob(jobId, jobType, message);
+        for (int i = 0; i < CONCURRENT_JOB_LIMIT; i++) {
+            String message = Queue.receiveMessage();
+            if (message != null) {
+                String[] parsedMessage = message.split("-");
+                Long jobId = Long.valueOf(parsedMessage[0]);
+                String jobType = parsedMessage[1];
+                runJob(jobId, jobType, message);
+            }
         }
     }
 
